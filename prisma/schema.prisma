@@ -1,0 +1,298 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  password      String
+  role          Role      @default(STAFF)
+  venueId       String?
+  venue         Venue?    @relation(fields: [venueId], references: [id])
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  conversations Conversation[]
+  quotes        Quote[]
+  bookings      Booking[]
+}
+
+enum Role {
+  ADMIN
+  STAFF
+  CLIENT
+}
+
+model Venue {
+  id          String   @id @default(cuid())
+  name        String
+  address     String?
+  capacity    Int?
+  description String?
+  priceRange  String?
+  imageUrl    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  users       User[]
+  salons      Salon[]
+  clients     Client[]
+  inventories InventoryItem[]
+}
+
+model Salon {
+  id        String   @id @default(cuid())
+  name      String
+  capacity  Int
+  venueId   String
+  venue     Venue    @relation(fields: [venueId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  bookings Booking[]
+  photos   SalonPhoto[]
+}
+
+model SalonPhoto {
+  id        String   @id @default(cuid())
+  url       String
+  salonId   String
+  salon     Salon    @relation(fields: [salonId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model Client {
+  id          String      @id @default(cuid())
+  name        String
+  email       String?
+  phone       String
+  source      LeadSource
+  venueId     String
+  venue       Venue       @relation(fields: [venueId], references: [id])
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  conversations Conversation[]
+  quotes         Quote[]
+  bookings       Booking[]
+  rsvps          RSVP[]
+}
+
+enum LeadSource {
+  WHATSAPP
+  INSTAGRAM
+  FACEBOOK
+  WEB
+  REFERRAL
+}
+
+model Conversation {
+  id        String             @id @default(cuid())
+  clientId  String
+  client    Client             @relation(fields: [clientId], references: [id])
+  userId    String?
+  user      User?              @relation(fields: [userId], references: [id])
+  status    ConversationStatus @default(ACTIVE)
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  messages Message[]
+}
+
+enum ConversationStatus {
+  ACTIVE
+  QUALIFIED
+  CONVERTED
+  CLOSED
+}
+
+model Message {
+  id             String      @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  role           MessageRole
+  content        String
+  metadata       Json?
+  createdAt      DateTime    @default(now())
+}
+
+enum MessageRole {
+  USER
+  ASSISTANT
+  SYSTEM
+}
+
+model Quote {
+  id          String      @id @default(cuid())
+  number      String      @unique
+  clientId    String
+  client      Client      @relation(fields: [clientId], references: [id])
+  userId      String?
+  user        User?       @relation(fields: [userId], references: [id])
+  eventDate   DateTime?
+  eventType   String?
+  guests      Int?
+  subtotal    Float
+  iva         Float       @default(0)
+  total       Float
+  status      QuoteStatus @default(DRAFT)
+  validUntil  DateTime?
+  notes       String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  items       QuoteItem[]
+  versions    QuoteVersion[]
+}
+
+enum QuoteStatus {
+  DRAFT
+  SENT
+  APPROVED
+  REJECTED
+  EXPIRED
+}
+
+model QuoteItem {
+  id        String  @id @default(cuid())
+  quoteId   String
+  quote     Quote   @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  category  String
+  name      String
+  unitPrice Float
+  quantity  Int
+  total     Float
+}
+
+model QuoteVersion {
+  id        String   @id @default(cuid())
+  quoteId   String
+  quote     Quote    @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  version   Int
+  subtotal  Float
+  iva       Float
+  total     Float
+  createdAt DateTime @default(now())
+}
+
+model Booking {
+  id          String        @id @default(cuid())
+  number      String        @unique
+  clientId    String
+  client      Client        @relation(fields: [clientId], references: [id])
+  salonId     String
+  salon       Salon         @relation(fields: [salonId], references: [id])
+  userId      String?
+  user        User?         @relation(fields: [userId], references: [id])
+  eventDate   DateTime
+  eventType   String
+  guests      Int
+  status      BookingStatus @default(PENDING)
+  notes       String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  contracts      Contract[]
+  calendarEvents CalendarEvent[]
+  kitchenOrders KitchenOrder[]
+  tableSetups   TableSetup[]
+  rsvps         RSVP[]
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+model Contract {
+  id          String   @id @default(cuid())
+  bookingId   String
+  booking     Booking  @relation(fields: [bookingId], references: [id])
+  version     Int      @default(1)
+  content     String   @db.Text
+  signedAt    DateTime?
+  signedDocUrl String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model CalendarEvent {
+  id             String   @id @default(cuid())
+  bookingId      String
+  booking        Booking  @relation(fields: [bookingId], references: [id])
+  title          String
+  startTime      DateTime
+  endTime        DateTime
+  type           String
+  googleEventId  String?
+  createdAt      DateTime @default(now())
+}
+
+model KitchenOrder {
+  id          String    @id @default(cuid())
+  bookingId   String
+  booking     Booking   @relation(fields: [bookingId], references: [id])
+  content     String    @db.Text
+  status      String    @default("PENDING")
+  deliveredAt DateTime?
+  createdAt   DateTime  @default(now())
+}
+
+model TableSetup {
+  id        String   @id @default(cuid())
+  bookingId String
+  booking   Booking  @relation(fields: [bookingId], references: [id])
+  config    Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model RSVP {
+  id        String   @id @default(cuid())
+  bookingId String
+  booking   Booking  @relation(fields: [bookingId], references: [id])
+  clientId  String
+  client    Client  @relation(fields: [clientId], references: [id])
+  name      String
+  email     String?
+  phone     String?
+  attending Boolean?
+  dietaryRestrictions String[]
+  tableNumber Int?
+  seatNumber  Int?
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model InventoryItem {
+  id          String   @id @default(cuid())
+  venueId     String
+  venue       Venue    @relation(fields: [venueId], references: [id])
+  category    String
+  name        String
+  description String?
+  unitPrice   Float
+  unit        String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  action     String
+  entityType String
+  entityId   String
+  userId     String?
+  metadata   Json?
+  createdAt  DateTime @default(now())
+}
