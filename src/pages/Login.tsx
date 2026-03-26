@@ -1,109 +1,133 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Sparkles, Mail, Lock, ArrowRight, Users, Calendar, MessageCircle } from 'lucide-react'
+import { Sparkles, ArrowRight, Eye, EyeOff } from 'lucide-react'
+
+const PIN = '1986'
 
 export default function Login() {
   const navigate = useNavigate()
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
+  const [pin, setPin] = useState('')
+  const [showPin, setShowPin] = useState(false)
+  const [error, setError] = useState(false)
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    setIsLoading(true)
-    setTimeout(() => {
+    if (pin === PIN) {
       navigate('/dashboard')
-    }, 1000)
+    } else {
+      setError(true)
+      setPin('')
+      setTimeout(() => setError(false), 1000)
+    }
   }
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 pb-24 md:pb-4">
-      <div className="w-full max-w-md">
+      <div className="w-full max-w-sm">
         {/* Logo & Branding */}
-        <div className="text-center mb-10 animate-fade-in">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl gradient-champagne mb-6 shadow-lg">
-            <Sparkles className="w-8 h-8 text-white" />
+        <div className="text-center mb-12 animate-fade-in">
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl gradient-champagne mb-6 shadow-xl">
+            <Sparkles className="w-10 h-10 text-white" />
           </div>
-          <h1 className="font-display display-lg text-[var(--color-primary)] mb-2">Avril</h1>
-          <p className="label-sm tracking-widest uppercase">Sistema Operativo de Eventos</p>
+          <h1 className="font-display text-4xl font-extrabold text-[var(--color-primary)] mb-1">AVRIL</h1>
+          <p className="label-sm tracking-widest uppercase text-[var(--color-on-surface-variant)]">Sistema Operativo de Eventos</p>
         </div>
 
         {/* Login Card */}
         <div className="glass-card rounded-3xl p-8 animate-fade-in" style={{ animationDelay: '0.1s' }}>
-          <h2 className="headline-md mb-2">Bienvenido de vuelta</h2>
-          <p className="body-md text-[var(--color-on-surface-variant)] mb-8">
-            Ingresá tus credenciales para acceder al sistema
+          <h2 className="font-display text-xl font-bold mb-2 text-center">Ingresar al sistema</h2>
+          <p className="body-md text-[var(--color-on-surface-variant)] mb-8 text-center">
+            Completá tu PIN de acceso
           </p>
 
-          <form onSubmit={handleLogin} className="space-y-5">
-            <div>
-              <label className="label-sm mb-2 block">Correo electrónico</label>
-              <div className="relative">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--color-on-surface-variant)]" />
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full glass-input rounded-full py-3.5 pl-12 pr-4 body-md"
-                  placeholder="tu@email.com"
-                  required
-                />
-              </div>
+          <form onSubmit={handleSubmit}>
+            {/* PIN Input */}
+            <div className="flex justify-center gap-4 mb-8">
+              {[0, 1, 2, 3].map((i) => (
+                <div
+                  key={i}
+                  className={`w-14 h-14 rounded-2xl flex items-center justify-center text-2xl font-bold transition-all ${
+                    error
+                      ? 'bg-red-100 border-2 border-red-400 text-red-600'
+                      : pin.length > i
+                      ? 'gradient-champagne text-white'
+                      : 'glass-input border-2 border-[var(--color-outline-variant)]'
+                  }`}
+                >
+                  {pin.length > i ? (showPin ? pin[i] : '•') : ''}
+                </div>
+              ))}
             </div>
 
-            <div>
-              <label className="label-sm mb-2 block">Contraseña</label>
-              <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--color-on-surface-variant)]" />
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full glass-input rounded-full py-3.5 pl-12 pr-4 body-md"
-                  placeholder="••••••••"
-                  required
-                />
-              </div>
+            {/* Keypad */}
+            <div className="grid grid-cols-3 gap-3 mb-6">
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9, null, 0, 'del'].map((key, i) => (
+                <button
+                  key={i}
+                  type={key === 'del' ? 'button' : 'button'}
+                  onClick={() => {
+                    if (key === 'del') {
+                      setPin(pin.slice(0, -1))
+                    } else if (key !== null && pin.length < 4) {
+                      const newPin = pin + key
+                      setPin(newPin)
+                      if (newPin.length === 4) {
+                        setTimeout(() => {
+                          if (newPin === PIN) {
+                            navigate('/dashboard')
+                          } else {
+                            setError(true)
+                            setPin('')
+                            setTimeout(() => setError(false), 1000)
+                          }
+                        }, 200)
+                      }
+                    }
+                  }}
+                  className={`h-14 rounded-2xl text-lg font-semibold transition-all active:scale-95 ${
+                    key === null
+                      ? 'invisible'
+                      : key === 'del'
+                      ? 'bg-[var(--color-surface-container-low)] text-[var(--color-on-surface-variant)] hover:bg-[var(--color-surface-container-high)]'
+                      : 'bg-[var(--color-surface-container-low)] hover:bg-[var(--color-surface-container-high)] text-[var(--color-on-surface)]'
+                  }`}
+                >
+                  {key === 'del' ? '⌫' : key}
+                </button>
+              ))}
             </div>
 
+            {/* Show/Hide PIN */}
+            <div className="flex items-center justify-center gap-2 mb-6">
+              <button
+                type="button"
+                onClick={() => setShowPin(!showPin)}
+                className="label-sm text-[var(--color-on-surface-variant)] flex items-center gap-1 hover:text-[var(--color-primary)] transition-colors"
+              >
+                {showPin ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                {showPin ? 'Ocultar' : 'Mostrar'} PIN
+              </button>
+            </div>
+
+            {/* Submit */}
             <button
               type="submit"
-              disabled={isLoading}
-              className="btn-primary w-full justify-center py-4"
+              className="btn-primary w-full justify-center py-4 text-base"
             >
-              {isLoading ? (
-                <span className="inline-block w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              ) : (
-                <>
-                  Ingresar
-                  <ArrowRight className="w-4 h-4" />
-                </>
-              )}
+              Ingresar
+              <ArrowRight className="w-5 h-5" />
             </button>
           </form>
 
-          <div className="mt-6 text-center">
-            <button className="label-sm text-[var(--color-primary)] hover:underline">
-              ¿Olvidaste tu contraseña?
-            </button>
-          </div>
+          <p className="label-sm text-center text-[var(--color-on-surface-variant)] mt-6">
+            PIN de demo: <span className="font-semibold text-[var(--color-primary)]">1986</span>
+          </p>
         </div>
 
-        {/* Feature highlights */}
-        <div className="grid grid-cols-3 gap-3 mt-8 animate-fade-in" style={{ animationDelay: '0.2s' }}>
-          <div className="glass rounded-2xl p-4 text-center">
-            <MessageCircle className="w-6 h-6 text-[var(--color-primary)] mx-auto mb-2" />
-            <p className="label-sm">Chatbot IA</p>
-          </div>
-          <div className="glass rounded-2xl p-4 text-center">
-            <Calendar className="w-6 h-6 text-[var(--color-primary)] mx-auto mb-2" />
-            <p className="label-sm">Presupuestos</p>
-          </div>
-          <div className="glass rounded-2xl p-4 text-center">
-            <Users className="w-6 h-6 text-[var(--color-primary)] mx-auto mb-2" />
-            <p className="label-sm">Armado Mesas</p>
-          </div>
-        </div>
+        {/* Footer */}
+        <p className="text-center mt-8 label-sm text-[var(--color-on-surface-variant)] animate-fade-in" style={{ animationDelay: '0.2s' }}>
+          ¿Olvidaste tu PIN? Contactá al administrador
+        </p>
       </div>
     </div>
   )
