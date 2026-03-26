@@ -1,131 +1,139 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Sparkles, ArrowRight, Eye, EyeOff } from 'lucide-react'
+import { Sparkles, ArrowRight } from 'lucide-react'
 
 const PIN = '1986'
 
 export default function Login() {
   const navigate = useNavigate()
   const [pin, setPin] = useState('')
-  const [showPin, setShowPin] = useState(false)
   const [error, setError] = useState(false)
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (pin === PIN) {
-      navigate('/dashboard')
-    } else {
-      setError(true)
-      setPin('')
-      setTimeout(() => setError(false), 1000)
+  const handleKey = (digit: string) => {
+    if (error) setError(false)
+    if (pin.length >= 4) return
+    const newPin = pin + digit
+    setPin(newPin)
+    if (newPin.length === 4) {
+      setTimeout(() => {
+        if (newPin === PIN) {
+          navigate('/dashboard')
+        } else {
+          setError(true)
+          setPin('')
+          setTimeout(() => setError(false), 1000)
+        }
+      }, 200)
     }
   }
 
+  const handleDelete = () => {
+    setPin(pin.slice(0, -1))
+  }
+
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 pb-24 md:pb-4">
-      <div className="w-full max-w-sm">
+    <div className="min-h-screen flex items-center justify-center p-4">
+      {/* Background atmosphere logo - subtle watermark */}
+      <div className="fixed inset-0 flex items-center justify-center pointer-events-none overflow-hidden">
+        <div className="text-[20rem] font-display font-black text-[#775a19] opacity-[0.03] select-none leading-none">
+          AVRIL
+        </div>
+      </div>
+
+      <div className="relative z-10 w-full max-w-sm">
         {/* Logo & Branding */}
-        <div className="text-center mb-12 animate-fade-in">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl gradient-champagne mb-6 shadow-xl">
-            <Sparkles className="w-10 h-10 text-white" />
+        <div className="text-center mb-10">
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full mb-5"
+            style={{ background: 'radial-gradient(circle at 40% 40%, #f8cf83, #775a19)' }}>
+            <Sparkles className="w-9 h-9 text-white" />
           </div>
-          <h1 className="font-display text-4xl font-extrabold text-[var(--color-primary)] mb-1">AVRIL</h1>
-          <p className="label-sm tracking-widest uppercase text-[var(--color-on-surface-variant)]">Sistema Operativo de Eventos</p>
+          <h1 className="font-display text-5xl font-extrabold mb-2 tracking-tighter"
+            style={{ color: '#775a19' }}>
+            AVRIL
+          </h1>
+          <p className="text-xs tracking-[0.25em] uppercase" style={{ color: '#6f7671' }}>
+            Sistema Operativo de Eventos
+          </p>
         </div>
 
-        {/* Login Card */}
-        <div className="glass-card rounded-3xl p-8 animate-fade-in" style={{ animationDelay: '0.1s' }}>
-          <h2 className="font-display text-xl font-bold mb-2 text-center">Ingresar al sistema</h2>
-          <p className="body-md text-[var(--color-on-surface-variant)] mb-8 text-center">
-            Completá tu PIN de acceso
+        {/* Login Card - Glassmorphism */}
+        <div className="rounded-3xl p-8"
+          style={{
+            background: 'rgba(255,255,255,0.6)',
+            backdropFilter: 'blur(12px) saturate(120%)',
+            WebkitBackdropFilter: 'blur(12px) saturate(120%)',
+            border: '1px solid rgba(119,90,25,0.12)',
+          }}>
+          <h2 className="font-display text-2xl font-bold mb-1 text-center"
+            style={{ color: '#2d3435' }}>
+            Bienvenido
+          </h2>
+          <p className="text-sm text-center mb-8" style={{ color: '#6f7671' }}>
+            Ingresá tu PIN de acceso
           </p>
 
-          <form onSubmit={handleSubmit}>
-            {/* PIN Input */}
-            <div className="flex justify-center gap-4 mb-8">
-              {[0, 1, 2, 3].map((i) => (
-                <div
-                  key={i}
-                  className={`w-14 h-14 rounded-2xl flex items-center justify-center text-2xl font-bold transition-all ${
-                    error
-                      ? 'bg-red-100 border-2 border-red-400 text-red-600'
-                      : pin.length > i
-                      ? 'gradient-champagne text-white'
-                      : 'glass-input border-2 border-[var(--color-outline-variant)]'
-                  }`}
-                >
-                  {pin.length > i ? (showPin ? pin[i] : '•') : ''}
-                </div>
-              ))}
-            </div>
-
-            {/* Keypad */}
-            <div className="grid grid-cols-3 gap-3 mb-6">
-              {[1, 2, 3, 4, 5, 6, 7, 8, 9, null, 0, 'del'].map((key, i) => (
-                <button
-                  key={i}
-                  type={key === 'del' ? 'button' : 'button'}
-                  onClick={() => {
-                    if (key === 'del') {
-                      setPin(pin.slice(0, -1))
-                    } else if (key !== null && pin.length < 4) {
-                      const newPin = pin + key
-                      setPin(newPin)
-                      if (newPin.length === 4) {
-                        setTimeout(() => {
-                          if (newPin === PIN) {
-                            navigate('/dashboard')
-                          } else {
-                            setError(true)
-                            setPin('')
-                            setTimeout(() => setError(false), 1000)
-                          }
-                        }, 200)
-                      }
-                    }
-                  }}
-                  className={`h-14 rounded-2xl text-lg font-semibold transition-all active:scale-95 ${
-                    key === null
-                      ? 'invisible'
-                      : key === 'del'
-                      ? 'bg-[var(--color-surface-container-low)] text-[var(--color-on-surface-variant)] hover:bg-[var(--color-surface-container-high)]'
-                      : 'bg-[var(--color-surface-container-low)] hover:bg-[var(--color-surface-container-high)] text-[var(--color-on-surface)]'
-                  }`}
-                >
-                  {key === 'del' ? '⌫' : key}
-                </button>
-              ))}
-            </div>
-
-            {/* Show/Hide PIN */}
-            <div className="flex items-center justify-center gap-2 mb-6">
-              <button
-                type="button"
-                onClick={() => setShowPin(!showPin)}
-                className="label-sm text-[var(--color-on-surface-variant)] flex items-center gap-1 hover:text-[var(--color-primary)] transition-colors"
+          {/* PIN Dots */}
+          <div className="flex justify-center gap-4 mb-10">
+            {[0, 1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="w-12 h-12 rounded-2xl flex items-center justify-center text-xl font-bold transition-all"
+                style={
+                  error
+                    ? { background: '#fee2e2', border: '2px solid #ef4444', color: '#ef4444' }
+                    : pin.length > i
+                    ? { background: 'linear-gradient(135deg, #775a19, #c9941f)', color: '#fff', boxShadow: '0 4px 16px rgba(119,90,25,0.3)' }
+                    : { background: 'rgba(255,255,255,0.8)', border: '1.5px solid rgba(119,90,25,0.15)' }
+                }
               >
-                {showPin ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                {showPin ? 'Ocultar' : 'Mostrar'} PIN
+                {pin.length > i ? '•' : ''}
+              </div>
+            ))}
+          </div>
+
+          {/* Keypad */}
+          <div className="grid grid-cols-3 gap-3 mb-8">
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9, '', 0, '⌫'].map((key, i) => (
+              <button
+                key={i}
+                onClick={() => key === '⌫' ? handleDelete() : key !== '' && handleKey(String(key))}
+                className="h-14 rounded-2xl text-lg font-semibold transition-all active:scale-95"
+                style={
+                  key === ''
+                    ? { visibility: 'hidden' }
+                    : key === '⌫'
+                    ? { background: 'rgba(255,255,255,0.5)', color: '#6f7671', border: '1px solid rgba(119,90,25,0.1)' }
+                    : { background: 'rgba(255,255,255,0.7)', color: '#2d3435', border: '1px solid rgba(119,90,25,0.1)' }
+                }
+              >
+                {key}
               </button>
-            </div>
+            ))}
+          </div>
 
-            {/* Submit */}
-            <button
-              type="submit"
-              className="btn-primary w-full justify-center py-4 text-base"
-            >
-              Ingresar
-              <ArrowRight className="w-5 h-5" />
-            </button>
-          </form>
+          {/* Submit */}
+          <button
+            onClick={() => {
+              if (pin === PIN) navigate('/dashboard')
+              else { setError(true); setPin(''); setTimeout(() => setError(false), 1000) }
+            }}
+            className="w-full py-4 rounded-2xl text-white font-semibold flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+            style={{
+              background: 'linear-gradient(135deg, #775a19 0%, #c9941f 100%)',
+              boxShadow: '0 4px 20px rgba(119,90,25,0.25)',
+            }}
+          >
+            Ingresar
+            <ArrowRight className="w-5 h-5" />
+          </button>
 
-          <p className="label-sm text-center text-[var(--color-on-surface-variant)] mt-6">
-            PIN de demo: <span className="font-semibold text-[var(--color-primary)]">1986</span>
+          <p className="text-xs text-center mt-6" style={{ color: '#6f7671' }}>
+            PIN de demo: <span className="font-semibold" style={{ color: '#775a19' }}>1986</span>
           </p>
         </div>
 
         {/* Footer */}
-        <p className="text-center mt-8 label-sm text-[var(--color-on-surface-variant)] animate-fade-in" style={{ animationDelay: '0.2s' }}>
+        <p className="text-center mt-8 text-xs" style={{ color: '#6f7671' }}>
           ¿Olvidaste tu PIN? Contactá al administrador
         </p>
       </div>

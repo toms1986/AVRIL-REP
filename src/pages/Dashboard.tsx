@@ -1,247 +1,173 @@
-import { useState } from 'react'
-import { 
-  MessageCircle, User,
-  Sparkles, Bell, Phone, Video, Paperclip,
-  MoreVertical, Search, Send, Bot, User as UserIcon, ChevronLeft,
+import { Link } from 'react-router-dom'
+import {
+  Sparkles, Bell, MessageCircle,
+  Calendar, FileText, Users, MapPin,
+  ArrowRight, Star
 } from 'lucide-react'
 
-const tabs = [
-  { id: 'chats', label: 'Chats', icon: MessageCircle },
-  { id: 'perfil', label: 'Perfil', icon: User },
+const stats = [
+  { label: 'Eventos', value: '23', icon: Calendar, color: '#775a19' },
+  { label: 'Consultas', value: '4', icon: FileText, color: '#c9941f' },
+  { label: 'Conversaciones', value: '12', icon: MessageCircle, color: '#1e7a4a' },
 ]
 
-const conversations = [
-  { id: '1', name: 'Micaela Gutiérrez', last: '¿Tiene disponibilidad para...', time: '10:32', unread: 2, avatar: 'MG', event: 'Casamiento' },
-  { id: '2', name: 'Lorena Martínez', last: 'Perfecto, muchas gracias', time: '09:15', unread: 0, avatar: 'LM', event: 'Cumple 40' },
-  { id: '3', name: 'Cami Rodríguez', last: '¿Podemos ir a ver el salón?', time: 'Ayer', unread: 0, avatar: 'CR', event: 'Baby Shower' },
-  { id: '4', name: 'Juan Pérez', last: 'Necesitamos agregar 20 personas', time: 'Ayer', unread: 0, avatar: 'JP', event: 'Corporativo' },
-  { id: '5', name: 'Ana López', last: '¡El evento fue hermoso!', time: 'Lun', unread: 0, avatar: 'AL', event: 'Boda de Oro' },
+const recentChats = [
+  { id: '1', name: 'Sofía Martínez', last: '¿Tiene disponibilidad para octubre?', time: '10:30', unread: 2, avatar: 'SM', event: 'Casamiento' },
+  { id: '2', name: 'Carlos Ríos', last: 'Presupuesto enviado ✓', time: '09:15', unread: 0, avatar: 'CR', event: 'Corporate' },
+  { id: '3', name: 'Ana Lucía Velt', last: '¿Puedo visitar mañana?', time: 'Ayer', unread: 1, avatar: 'AV', event: 'Cumple 40' },
+]
+
+const quickActions = [
+  { label: 'Ver salón', icon: MapPin, href: '/profile/1', color: '#775a19' },
+  { label: 'Presupuesto', icon: FileText, href: '/quotes', color: '#c9941f' },
+  { label: 'Mesas', icon: Users, href: '/tables', color: '#1e7a4a' },
 ]
 
 export default function Dashboard() {
-  const [activeTab, setActiveTab] = useState('chats')
-  const [showChat, setShowChat] = useState(false)
-  const [messages, setMessages] = useState([
-    { id: '1', role: 'user', content: 'Hola! Quiero consultar por disponibilidad para un casamiento en noviembre', time: '10:30' },
-    { id: '2', role: 'assistant', content: '¡Hola! 👋 Qué alegría que nos contactes. Contame, ¿para qué fecha sería el casamiento y cuántos invitados estiman?', time: '10:31' },
-    { id: '3', role: 'user', content: 'Sería para el 15 de noviembre, estamos pensando en unas 180 personas', time: '10:32' },
-    { id: '4', role: 'assistant', content: '¡Qué hermosa fecha! El 15 de noviembre tenemos disponible nuestro Salón Principal que tiene capacidad para hasta 250 personas. ¿Te gustaría que te envíe un presupuesto personalizado?', time: '10:33' },
-  ])
-  const [inputValue, setInputValue] = useState('')
-  const [selectedConv, setSelectedConv] = useState<typeof conversations[0] | null>(null)
-
-  const handleSend = () => {
-    if (!inputValue.trim()) return
-    setMessages(prev => [...prev, { id: Date.now().toString(), role: 'user', content: inputValue, time: new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' }) }])
-    setInputValue('')
-    setTimeout(() => {
-      setMessages(prev => [...prev, { id: (Date.now() + 1).toString(), role: 'assistant', content: 'Gracias por la información. Un momento mientras preparo el presupuesto personalizado para vos. 💛', time: new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' }) }])
-    }, 1500)
-  }
-
-  const openConversation = (conv: typeof conversations[0]) => {
-    setSelectedConv(conv)
-    setShowChat(true)
-  }
-
-  if (showChat && selectedConv) {
-    return (
-      <div className="min-h-screen flex flex-col" style={{ background: 'var(--color-background)' }}>
-        {/* Chat Header */}
-        <header className="glass sticky top-0 z-50" style={{ borderBottom: '1px solid var(--color-outline-variant)' }}>
-          <div className="flex items-center gap-3 px-4 py-3">
-            <button onClick={() => setShowChat(false)} className="p-2 rounded-full hover:bg-[var(--color-surface-container-low)] transition-colors">
-              <ChevronLeft className="w-5 h-5" />
-            </button>
-            <div className="w-10 h-10 rounded-full gradient-champagne flex items-center justify-center text-white font-semibold text-sm">
-              {selectedConv.avatar}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="body-md font-medium truncate">{selectedConv.name}</p>
-              <p className="label-sm text-[var(--color-on-surface-variant)]">{selectedConv.event}</p>
-            </div>
-            <button className="p-2 rounded-full hover:bg-[var(--color-surface-container-low)]">
-              <Phone className="w-5 h-5 text-[var(--color-on-surface-variant)]" />
-            </button>
-            <button className="p-2 rounded-full hover:bg-[var(--color-surface-container-low)]">
-              <Video className="w-5 h-5 text-[var(--color-on-surface-variant)]" />
-            </button>
-            <button className="p-2 rounded-full hover:bg-[var(--color-surface-container-low)]">
-              <MoreVertical className="w-5 h-5 text-[var(--color-on-surface-variant)]" />
-            </button>
-          </div>
-        </header>
-
-        {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-3 pb-24">
-          {messages.map((msg) => (
-            <div key={msg.id} className={`flex gap-2 animate-fade-in ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
-              {msg.role === 'assistant' && (
-                <div className="w-8 h-8 rounded-full gradient-champagne flex items-center justify-center flex-shrink-0">
-                  <Bot className="w-4 h-4 text-white" />
-                </div>
-              )}
-              {msg.role === 'user' && (
-                <div className="w-8 h-8 rounded-full bg-[var(--color-surface-container-high)] flex items-center justify-center flex-shrink-0">
-                  <UserIcon className="w-4 h-4 text-[var(--color-on-surface-variant)]" />
-                </div>
-              )}
-              <div className={`max-w-[75%] ${msg.role === 'user' ? 'items-end' : ''} flex flex-col gap-1`}>
-                <div className={msg.role === 'user' ? 'chat-bubble-outgoing' : 'chat-bubble-incoming'}>
-                  <p className="body-md whitespace-pre-wrap">{msg.content}</p>
-                </div>
-                <span className="label-sm text-[var(--color-on-surface-variant)]">{msg.time}</span>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Input */}
-        <div className="p-4 glass fixed bottom-0 left-0 right-0" style={{ borderTop: '1px solid var(--color-outline-variant)' }}>
-          <div className="flex items-center gap-3 max-w-3xl mx-auto">
-            <button className="p-2 text-[var(--color-on-surface-variant)]">
-              <Paperclip className="w-5 h-5" />
-            </button>
-            <input
-              type="text"
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-              placeholder="Escribí un mensaje..."
-              className="flex-1 glass-input rounded-full py-3 px-4 body-md"
-            />
-            <button
-              onClick={handleSend}
-              disabled={!inputValue.trim()}
-              className="w-10 h-10 rounded-full gradient-champagne flex items-center justify-center disabled:opacity-50"
-            >
-              <Send className="w-5 h-5 text-white" />
-            </button>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: 'var(--color-background)' }}>
+    <div className="min-h-screen pb-24 md:pb-8" style={{ background: '#f9f9f9' }}>
       {/* Header */}
-      <header className="px-4 pt-6 pb-4">
-        <div className="flex items-center justify-between mb-6">
+      <div className="px-4 pt-6">
+        <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
-            <div className="w-14 h-14 rounded-2xl gradient-champagne flex items-center justify-center">
-              <Sparkles className="w-7 h-7 text-white" />
+            <div className="w-12 h-12 rounded-2xl flex items-center justify-center"
+              style={{ background: 'linear-gradient(135deg, #775a19, #c9941f)' }}>
+              <Sparkles className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className="font-display text-2xl font-extrabold text-[var(--color-primary)]">AVRIL</h1>
-              <p className="label-sm text-[var(--color-on-surface-variant)]">Panel de Control</p>
+              <h1 className="font-display text-2xl font-extrabold tracking-tight" style={{ color: '#775a19' }}>AVRIL</h1>
+              <p className="text-xs" style={{ color: '#6f7671' }}>Panel de Control</p>
             </div>
           </div>
-          <div className="relative">
-            <Bell className="w-6 h-6 text-[var(--color-on-surface-variant)]" />
-            <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-[var(--color-error)] flex items-center justify-center">
-              <span className="text-white text-[10px] font-bold">2</span>
-            </span>
-          </div>
+          <button className="relative p-2.5 rounded-2xl"
+            style={{ background: 'rgba(255,255,255,0.8)', border: '1px solid rgba(119,90,25,0.1)' }}>
+            <Bell className="w-5 h-5" style={{ color: '#6f7671' }} />
+            <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full text-[10px] font-bold text-white flex items-center justify-center"
+              style={{ background: '#775a19' }}>2</span>
+          </button>
         </div>
 
-        {/* User greeting */}
+        {/* Greeting */}
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[var(--color-primary-fixed-dim)] to-[var(--color-primary)] flex items-center justify-center text-white font-bold text-lg">
+          <div className="w-11 h-11 rounded-full flex items-center justify-center text-white font-bold text-sm"
+            style={{ background: 'linear-gradient(135deg, #775a19, #c9941f)' }}>
             JA
           </div>
           <div>
-            <p className="font-display text-lg font-bold">¡Buen día, Juan!</p>
-            <p className="label-sm text-[var(--color-on-surface-variant)]">4 consultas nuevas</p>
+            <p className="font-display text-lg font-bold" style={{ color: '#2d3435' }}>¡Buen día, Juan!</p>
+            <p className="text-xs" style={{ color: '#6f7671' }}>4 consultas nuevas esta semana</p>
           </div>
         </div>
 
         {/* Stats */}
         <div className="grid grid-cols-3 gap-3 mb-6">
-          {[
-            { label: 'Eventos', value: '23', sub: 'totales' },
-            { label: 'Consultas', value: '4', sub: 'nuevas' },
-            { label: 'Convers', value: '12', sub: 'activas' },
-          ].map((stat) => (
-            <div key={stat.label} className="rounded-2xl p-3 text-center" style={{ background: 'var(--color-surface-container-low)' }}>
-              <p className="font-display text-2xl font-extrabold text-[var(--color-primary)]">{stat.value}</p>
-              <p className="label-sm font-medium text-[var(--color-on-surface)]">{stat.label}</p>
-              <p className="label-sm text-[var(--color-on-surface-variant)]">{stat.sub}</p>
+          {stats.map((s) => (
+            <div key={s.label} className="rounded-2xl p-3 text-center"
+              style={{ background: 'rgba(255,255,255,0.8)', border: '1px solid rgba(119,90,25,0.08)' }}>
+              <s.icon className="w-4 h-4 mx-auto mb-1" style={{ color: s.color }} />
+              <div className="font-display text-2xl font-extrabold" style={{ color: '#2d3435' }}>{s.value}</div>
+              <div className="text-xs" style={{ color: '#6f7671' }}>{s.label}</div>
             </div>
           ))}
         </div>
 
-        {/* Search */}
-        <div className="relative mb-4">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-on-surface-variant)]" />
-          <input
-            type="text"
-            placeholder="Buscar conversación..."
-            className="w-full rounded-full py-2.5 pl-10 pr-4 body-md"
-            style={{ background: 'var(--color-surface-container-low)', border: '1px solid var(--color-outline-variant)' }}
-          />
+        {/* Quick actions */}
+        <div className="flex gap-2 mb-6 overflow-x-auto pb-1">
+          {quickActions.map((a) => (
+            <Link
+              key={a.label}
+              to={a.href}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-2xl text-sm font-semibold whitespace-nowrap transition-all active:scale-95"
+              style={{
+                background: 'rgba(255,255,255,0.8)',
+                border: '1px solid rgba(119,90,25,0.12)',
+                color: '#775a19',
+              }}>
+              <a.icon className="w-4 h-4" />
+              {a.label}
+            </Link>
+          ))}
         </div>
-      </header>
 
-      {/* Conversations List */}
-      <div className="flex-1 overflow-y-auto px-4">
-        <p className="label-sm font-medium text-[var(--color-on-surface-variant)] mb-3 px-1">CONVERSACIONES</p>
+        {/* Salon card */}
+        <Link
+          to="/profile/1"
+          className="block rounded-2xl overflow-hidden mb-6 transition-all active:scale-[0.99]"
+          style={{
+            background: 'linear-gradient(135deg, rgba(119,90,25,0.08), rgba(201,148,31,0.12))',
+            border: '1px solid rgba(119,90,25,0.12)',
+          }}>
+          <div className="h-28 flex items-center justify-center"
+            style={{ background: 'linear-gradient(135deg, #775a19 0%, #c9941f 60%, #f8cf83 100%)' }}>
+            <div className="text-center text-white">
+              <div className="text-4xl mb-1">✨</div>
+              <p className="text-xs uppercase tracking-widest opacity-80">Proyección AR</p>
+            </div>
+          </div>
+          <div className="p-4">
+            <div className="flex items-center justify-between mb-1">
+              <h3 className="font-display text-lg font-bold" style={{ color: '#2d3435' }}>Salón Cristal</h3>
+              <div className="flex items-center gap-1">
+                <Star className="w-3.5 h-3.5 fill-[#c9941f] text-[#c9941f]" />
+                <span className="text-xs font-semibold" style={{ color: '#2d3435' }}>4.9</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-1 mb-3">
+              <MapPin className="w-3.5 h-3.5" style={{ color: '#775a19' }} />
+              <span className="text-xs" style={{ color: '#6f7671' }}>Palermo, Buenos Aires · 350 personas</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-bold" style={{ color: '#775a19' }}>$45.000 / hora</span>
+              <span className="text-xs flex items-center gap-1" style={{ color: '#6f7671' }}>
+                Ver perfil <ArrowRight className="w-3.5 h-3.5" />
+              </span>
+            </div>
+          </div>
+        </Link>
+
+        {/* Conversations */}
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-sm font-semibold" style={{ color: '#2d3435' }}>Conversaciones recientes</p>
+          <Link to="/crm" className="text-xs font-semibold" style={{ color: '#775a19' }}>
+            Ver todas
+          </Link>
+        </div>
+
         <div className="space-y-2">
-          {conversations.map((conv) => (
-            <div
+          {recentChats.map((conv) => (
+            <Link
               key={conv.id}
-              onClick={() => openConversation(conv)}
-              className="flex items-center gap-3 p-3 rounded-2xl cursor-pointer transition-all hover:scale-[1.01]"
-              style={{ background: 'var(--color-surface)' }}
-            >
+              to="/crm"
+              className="flex items-center gap-3 p-3 rounded-2xl transition-all active:scale-[0.99]"
+              style={{
+                background: 'rgba(255,255,255,0.8)',
+                border: '1px solid rgba(119,90,25,0.08)',
+              }}>
               <div className="relative">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[var(--color-primary-fixed-dim)] to-[var(--color-primary)] flex items-center justify-center text-white font-semibold text-sm">
+                <div className="w-11 h-11 rounded-full flex items-center justify-center text-white text-sm font-bold"
+                  style={{ background: 'linear-gradient(135deg, #775a19, #c9941f)' }}>
                   {conv.avatar}
                 </div>
                 {conv.unread > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 w-5 h-5 rounded-full bg-[var(--color-primary)] flex items-center justify-center">
-                    <span className="text-white text-[10px] font-bold">{conv.unread}</span>
-                  </span>
+                  <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full text-[10px] font-bold text-white flex items-center justify-center"
+                    style={{ background: '#775a19' }}>{conv.unread}</span>
                 )}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between mb-0.5">
-                  <p className="body-md font-semibold truncate">{conv.name}</p>
-                  <span className="label-sm text-[var(--color-on-surface-variant)]">{conv.time}</span>
+                  <span className="text-sm font-semibold truncate" style={{ color: '#2d3435' }}>{conv.name}</span>
+                  <span className="text-xs ml-2 flex-shrink-0" style={{ color: '#6f7671' }}>{conv.time}</span>
                 </div>
-                <p className="label-sm text-[var(--color-on-surface-variant)] truncate">{conv.last}</p>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs px-1.5 py-0.5 rounded-full font-medium"
+                    style={{ background: 'rgba(119,90,25,0.08)', color: '#775a19' }}>{conv.event}</span>
+                  <p className="text-xs truncate" style={{ color: '#6f7671' }}>{conv.last}</p>
+                </div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       </div>
-
-      {/* Bottom Navigation */}
-      <nav className="glass safe-area-bottom" style={{ borderTop: '1px solid var(--color-outline-variant)' }}>
-        <div className="flex justify-around py-2">
-          {tabs.map((tab) => {
-            const isActive = activeTab === tab.id
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex flex-col items-center gap-1 px-6 py-2 rounded-xl transition-colors ${
-                  isActive
-                    ? 'text-[var(--color-primary)]'
-                    : 'text-[var(--color-on-surface-variant)]'
-                }`}
-              >
-                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-colors ${
-                  isActive ? 'gradient-champagne' : ''
-                }`}>
-                  <tab.icon className={`w-6 h-6 ${isActive ? 'text-white' : ''}`} />
-                </div>
-                <span className="text-xs font-semibold">{tab.label}</span>
-              </button>
-            )
-          })}
-        </div>
-      </nav>
     </div>
   )
 }
